@@ -1,9 +1,7 @@
-import React, { useState, useEffect, Fragment } from "react";
-import { Box, Button, Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip, Typography, MenuItem, Card } from "@mui/material";
-import { styled } from '@mui/material/styles';
-import { tooltipClasses } from '@mui/material/Tooltip';
-import { fetchData, setData } from "../core/localStorage";
-import ReportsDialog from "./ReportsDialog";
+import React, { useState, useEffect, Fragment } from 'react';
+import { Box, Button, Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip, Typography, MenuItem, Card } from '@mui/material';
+import { fetchData, setData } from '../core/localStorage';
+import ReportsDialog from './ReportsDialog';
 import { Store } from 'react-notifications-component';
 
 function Products() {
@@ -54,7 +52,7 @@ function Products() {
     // Fetch costs data from local storage when the component mounts
     useEffect(() => {
         async function getItem() {
-            const storedCosts = await fetchData("costs");
+            const storedCosts = await fetchData('costs');
             if (storedCosts) {
                 setCosts(JSON.parse(storedCosts));
             }
@@ -65,20 +63,20 @@ function Products() {
     // Save costs data to local storage when it updates
     useEffect(() => {
         async function setItem() {
-            await setData("costs", JSON.stringify(costs));
+            await setData('costs', JSON.stringify(costs));
         }
         setItem()
-    }, [costs]);
+    }, [costs.length]);
 
     const notifyEmptyValue = (valueNames) => {
         Store.addNotification({
-            title: "Error",
+            title: 'Error',
             message: `value of ${valueNames.toString()} is missing`,
-            type: "danger",
-            insert: "top",
-            container: "top-right",
-            animationIn: ["animate__animated", "animate__fadeIn"],
-            animationOut: ["animate__animated", "animate__fadeOut"],
+            type: 'danger',
+            insert: 'top',
+            container: 'top-right',
+            animationIn: ['animate__animated', 'animate__fadeIn'],
+            animationOut: ['animate__animated', 'animate__fadeOut'],
             dismiss: {
                 duration: 2000,
                 onScreen: true
@@ -129,12 +127,12 @@ function Products() {
             form.reset();
 
             Store.addNotification({
-                title: "Product added succesfully!",
-                type: "success",
-                insert: "top",
-                container: "top-right",
-                animationIn: ["animate__animated", "animate__fadeIn"],
-                animationOut: ["animate__animated", "animate__fadeOut"],
+                title: 'Product added succesfully!',
+                type: 'success',
+                insert: 'top',
+                container: 'top-right',
+                animationIn: ['animate__animated', 'animate__fadeIn'],
+                animationOut: ['animate__animated', 'animate__fadeOut'],
                 dismiss: {
                     duration: 2000,
                     onScreen: true
@@ -147,12 +145,12 @@ function Products() {
     const deleteCost = (index) => {
         setCosts(costs.filter((_, i) => i !== index));
         Store.addNotification({
-            title: "Product removed succesfully!",
-            type: "info",
-            insert: "top",
-            container: "top-right",
-            animationIn: ["animate__animated", "animate__fadeIn"],
-            animationOut: ["animate__animated", "animate__fadeOut"],
+            title: 'Product removed succesfully!',
+            type: 'info',
+            insert: 'top',
+            container: 'top-right',
+            animationIn: ['animate__animated', 'animate__fadeIn'],
+            animationOut: ['animate__animated', 'animate__fadeOut'],
             dismiss: {
                 duration: 2000,
                 onScreen: true
@@ -161,20 +159,22 @@ function Products() {
     };
 
     // Function for editing a cost item
-    const editCost = (index) => {
+    const editCost = async(index) => {
         if (costs[index].isEdit) {
             Store.addNotification({
-                title: "Product edited succesfully!",
-                type: "info",
-                insert: "top",
-                container: "top-right",
-                animationIn: ["animate__animated", "animate__fadeIn"],
-                animationOut: ["animate__animated", "animate__fadeOut"],
+                title: 'Product edited succesfully!',
+                type: 'info',
+                insert: 'top',
+                container: 'top-right',
+                animationIn: ['animate__animated', 'animate__fadeIn'],
+                animationOut: ['animate__animated', 'animate__fadeOut'],
                 dismiss: {
                     duration: 2000,
                     onScreen: true
                 }
             });
+
+            await setData('costs', JSON.stringify(costs));
         }
 
         setCosts(costs.map((cost, i) => (i === index ? { ...cost, isEdit: !cost.isEdit } : cost)));
@@ -188,20 +188,22 @@ function Products() {
         if (costs[index].isEdit) {
             const label = `Edit ${prop}`
             return <TextField
-                id="outlined-read-only-input"
+                id='outlined-read-only-input'
                 value={costs[index][prop]}
                 onChange={(e) => handleChange(index, prop, e)}
                 type={type}
                 label={label}
+                multiline
             />
         } else {
             return <TextField
-                id="outlined-read-only-input"
+                id='outlined-read-only-input'
                 value={costs[index][prop]}
                 type={type}
                 InputProps={{
                     readOnly: true,
                 }}
+                multiline
             />
         }
     }
@@ -209,12 +211,12 @@ function Products() {
     const categoryByStatus = (index, costs) => {
         if (costs[index].isEdit) {
             return <TextField
-                label="Edit Category"
-                variant="outlined"
-                margin="normal"
-                id="category"
-                name="category"
-                style={{ margin: "10px" }}
+                label='Edit Category'
+                variant='outlined'
+                margin='normal'
+                id='category'
+                name='category'
+                style={{ margin: '10px' }}
                 select
                 value={costs[index]['category']}
                 onChange={(e) => handleChange(index, 'category', e)}
@@ -227,7 +229,7 @@ function Products() {
             </TextField>
         } else {
             return <TextField
-                id="outlined-read-only-input"
+                id='outlined-read-only-input'
                 value={costs[index]['category']}
                 select
                 InputProps={{
@@ -251,103 +253,85 @@ function Products() {
                         <TableCell>Name</TableCell>
                         <TableCell>Cost</TableCell>
                         <TableCell>Category</TableCell>
+                        <TableCell>Description</TableCell>
                         <TableCell>Actions</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {costs.map((cost, index) => (
-                        <HtmlTooltip key={index}
-                            title={
-                                <React.Fragment>
-                                    <Typography color="inherit">Description</Typography>
-                                    {costs[index]['description']}
-                                </React.Fragment>
-                            }
-                        >
                             <TableRow key={index}>
                                 <TableCell style={{ width: '200px' }}>
-                                    {rowByStatus(index, costs, "name")}
+                                    {rowByStatus(index, costs, 'name')}
                                 </TableCell>
                                 <TableCell style={{ width: '200px' }}>
-                                    {rowByStatus(index, costs, "cost", "number")}
+                                    {rowByStatus(index, costs, 'cost', 'number')}
                                 </TableCell>
-                                <TableCell style={{ width: '200px' }}>
+                                <TableCell style={{ width: '120px' }}>
                                     {categoryByStatus(index, costs)}
                                 </TableCell>
+                                <TableCell style={{ width: '200px' }}>
+                                    {rowByStatus(index, costs, 'description', 'text')}
+                                </TableCell>
                                 <TableCell >
-                                    <Button style={{margin:"2px"}} variant="contained" color="error" onClick={() => deleteCost(index)}>Delete</Button>
-                                    <Button style={{margin:"2px"}} variant="contained" color="success" onClick={() => editCost(index, cost)}>{costs[index].isEdit ? 'Save' : 'Edit'}</Button>
+                                    <Button style={{margin:'2px'}} variant='contained' color='error' onClick={() => deleteCost(index)}>Delete</Button>
+                                    <Button style={{margin:'2px'}} variant='contained' color='success' onClick={() => editCost(index, cost)}>{costs[index].isEdit ? 'Save' : 'Edit'}</Button>
                                 </TableCell>
                             </TableRow>
-                        </HtmlTooltip>
                     ))}
                 </TableBody>
             </Table>
         }
     }
-    const HtmlTooltip = styled(({ className, ...props }) => (
-        <Tooltip {...props} classes={{ popper: className }} />
-    ))(({ theme }) => ({
-        [`& .${tooltipClasses.tooltip}`]: {
-            backgroundColor: '#f5f5f9',
-            color: 'rgba(0, 0, 0, 0.87)',
-            maxWidth: 220,
-            fontSize: theme.typography.pxToRem(12),
-            border: '1px solid #dadde9',
-        },
-    }));
 
     return (
         <div >
             <div style={{ position: 'fixed', height: '100px', width: '100%' }}>
                 <Button
                     style={{ margin: 10, position: 'fixed' }}
-                    variant="outlined"
+                    variant='outlined'
                     onClick={() => setRerortsDialogOpen(true)}>
                     Reports
                 </Button>
-                <h1 style={{ margin: 10, marginTop: 70, position: 'fixed' }}>
+                <h1 style={{ margin: 10, marginTop: 50, position: 'fixed' }}>
                     Costs Manager
                 </h1>
-
             </div>
-            <Box sx={{ boxShadow: 3 }} className="App" style={{ margin: 20, padding: 10, overflow: 'auto', position: 'relative', marginTop: '130px', width: '900px' }}>
+            <Box sx={{ boxShadow: 3 }} className='App' style={{ margin: 20, padding: 10, overflow: 'auto', position: 'relative', marginTop: '130px', width: '1100px' }}>
                 <ReportsDialog
                     open={rerortsDialogOpen}
                     onClose={() => setRerortsDialogOpen(false)}
                     costs={costs}
                     categories={categories}
-                    HtmlTooltip={HtmlTooltip}
                 />
                 <div style={{ position: 'relative' }}>
                     <form onSubmit={addCost} >
                         <div>
                             <TextField
-                                label="Name"
-                                variant="outlined"
-                                margin="normal"
-                                id="name"
-                                name="name"
-                                style={{ margin: "10px" }}
+                                label='Name'
+                                variant='outlined'
+                                margin='normal'
+                                id='name'
+                                name='name'
+                                style={{ margin: '10px' }}
                             />
                             <TextField
-                                label="Cost"
-                                variant="outlined"
-                                margin="normal"
-                                type="number"
-                                id="cost"
-                                name="cost"
-                                style={{ margin: "10px" }}
+                                label='Cost'
+                                variant='outlined'
+                                margin='normal'
+                                type='number'
+                                id='cost'
+                                name='cost'
+                                style={{ margin: '10px' }}
                             />
                             <TextField
-                                label="Category"
-                                variant="outlined"
-                                margin="normal"
-                                id="category"
-                                name="category"
-                                style={{ margin: "10px" }}
+                                label='Category'
+                                variant='outlined'
+                                margin='normal'
+                                id='category'
+                                name='category'
+                                style={{ margin: '10px' }}
                                 select
-                                defaultValue="other"
+                                defaultValue='other'
                             >
                                 {categories.map((option) => (
                                     <MenuItem key={option.value} value={option.value}>
@@ -355,18 +339,18 @@ function Products() {
                                     </MenuItem>
                                 ))}
                             </TextField>
-                            <Button variant="contained" color="success" type="submit" style={{ margin: "20px" }}>
+                            <Button variant='contained' color='success' type='submit' style={{ margin: '20px' }}>
                                 Add Cost
                             </Button>
                         </div>
                         <div>
                             <TextField
-                                label="Description"
-                                variant="outlined"
-                                margin="normal"
-                                id="description"
-                                name="description"
-                                style={{ margin: "10px", width: 655 }}
+                                label='Description'
+                                variant='outlined'
+                                margin='normal'
+                                id='description'
+                                name='description'
+                                style={{ margin: '10px', width: 655 }}
                             />
                         </div>
                     </form>

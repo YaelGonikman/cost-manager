@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import { MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, IconButton, Button } from '@mui/material';
+import {Tooltip,  MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, IconButton, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { styled } from '@mui/material/styles';
+import { tooltipClasses } from '@mui/material/Tooltip';
 
 function ReportsDialog(props) {
-  const { onClose, open, costs, categories, HtmlTooltip } = props;
+  const { onClose, open, costs, categories } = props;
   const [relevantCosts, setRelevantCosts] = useState([])
   const [month, setMonth] = useState(1);
   const [year, setYear] = useState(2023);
@@ -13,6 +15,18 @@ function ReportsDialog(props) {
   useEffect(() => {
     setRelevantCosts(costs)
   }, [costs])
+
+  const HtmlTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: '#f5f5f9',
+      color: 'rgba(0, 0, 0, 0.87)',
+      maxWidth: 220,
+      fontSize: theme.typography.pxToRem(12),
+      border: '1px solid #dadde9',
+    },
+  }));
 
   const rowByStatus = (index, costs, prop, type) => {
     return <TextField
@@ -35,8 +49,7 @@ function ReportsDialog(props) {
 
   const filterByDateRange = () => {
     setRelevantCosts(costs.filter(item => {
-      console.log(item.createdAt.getMonth(), new Date(item.createdAt).getFullYear())
-      return item.createdAt.getMonth() + 1 == month &&  item.createdAt.getYear() == year;
+      return item.createdAt.getMonth() + 1  === month && item.createdAt.getFullYear() === year;
     }))
   }
 
