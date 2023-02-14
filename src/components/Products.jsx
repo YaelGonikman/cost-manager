@@ -1,9 +1,10 @@
 import React, { useState, useEffect, Fragment } from "react";
-import { Button, Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip, Typography, MenuItem, Card } from "@mui/material";
+import { Box, Button, Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip, Typography, MenuItem, Card } from "@mui/material";
 import { styled } from '@mui/material/styles';
 import { tooltipClasses } from '@mui/material/Tooltip';
 import { fetchData, setData } from "../core/localStorage";
 import ReportsDialog from "./ReportsDialog";
+import { Store } from 'react-notifications-component';
 
 function Products() {
     // Initialize state for storing costs data
@@ -69,29 +70,113 @@ function Products() {
         setItem()
     }, [costs]);
 
+    const notifyEmptyValue = (valueNames) => {
+        Store.addNotification({
+            title: "Error",
+            message: `value of ${valueNames.toString()} is missing`,
+            type: "danger",
+            insert: "top",
+            container: "top-right",
+            animationIn: ["animate__animated", "animate__fadeIn"],
+            animationOut: ["animate__animated", "animate__fadeOut"],
+            dismiss: {
+                duration: 2000,
+                onScreen: true
+            }
+        });
+    }
+
+    // Check if empty value
+    const isEmpty = (value) => {
+        return value.trim().length === 0
+    }
+
+    // Validate form values
+    const validateForm = (form) => {
+        let missingValues = []
+        if (isEmpty(form.elements.name.value)) {
+            missingValues.push('name')
+        }
+        if (isEmpty(form.elements.cost.value)) {
+            missingValues.push('cost')
+        }
+        if (isEmpty(form.elements.description.value)) {
+            missingValues.push('description')
+        }
+        if (missingValues.length) {
+            notifyEmptyValue(missingValues)
+            return false
+        }
+        return true
+    }
+
     // Function for adding a new cost item
     const addCost = (event) => {
         event.preventDefault();
+
         const form = event.target;
-        const cost = {
-            name: form.elements.name.value,
-            cost: form.elements.cost.value,
-            category: form.elements.category.value,
-            description: form.elements.description.value,
-            createdAt: new Date(Date.now()),
-            isEdit: false
-        };
-        setCosts([...costs, cost]);
-        form.reset();
+
+        if (validateForm(form)) {
+            const cost = {
+                name: form.elements.name.value,
+                cost: form.elements.cost.value,
+                category: form.elements.category.value,
+                description: form.elements.description.value,
+                createdAt: new Date(),
+                isEdit: false
+            };
+            setCosts([...costs, cost]);
+            form.reset();
+
+            Store.addNotification({
+                title: "Product added succesfully!",
+                type: "success",
+                insert: "top",
+                container: "top-right",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                    duration: 2000,
+                    onScreen: true
+                }
+            });
+        }
     };
 
     // Function for deleting a cost item
     const deleteCost = (index) => {
         setCosts(costs.filter((_, i) => i !== index));
+        Store.addNotification({
+            title: "Product removed succesfully!",
+            type: "info",
+            insert: "top",
+            container: "top-right",
+            animationIn: ["animate__animated", "animate__fadeIn"],
+            animationOut: ["animate__animated", "animate__fadeOut"],
+            dismiss: {
+                duration: 2000,
+                onScreen: true
+            }
+        });
     };
 
     // Function for editing a cost item
     const editCost = (index) => {
+        if (costs[index].isEdit) {
+            Store.addNotification({
+                title: "Product edited succesfully!",
+                type: "info",
+                insert: "top",
+                container: "top-right",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                    duration: 2000,
+                    onScreen: true
+                }
+            });
+        }
+
         setCosts(costs.map((cost, i) => (i === index ? { ...cost, isEdit: !cost.isEdit } : cost)));
     };
 
@@ -113,7 +198,6 @@ function Products() {
             return <TextField
                 id="outlined-read-only-input"
                 value={costs[index][prop]}
-                label="Read Only"
                 type={type}
                 InputProps={{
                     readOnly: true,
@@ -145,7 +229,6 @@ function Products() {
             return <TextField
                 id="outlined-read-only-input"
                 value={costs[index]['category']}
-                label="Read Only"
                 select
                 InputProps={{
                     readOnly: true,
@@ -160,6 +243,48 @@ function Products() {
         }
     }
 
+    const renderTable = () => {
+        if (costs.length) {
+            return <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Cost</TableCell>
+                        <TableCell>Category</TableCell>
+                        <TableCell>Actions</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {costs.map((cost, index) => (
+                        <HtmlTooltip key={index}
+                            title={
+                                <React.Fragment>
+                                    <Typography color="inherit">Description</Typography>
+                                    {costs[index]['description']}
+                                </React.Fragment>
+                            }
+                        >
+                            <TableRow key={index}>
+                                <TableCell style={{ width: '200px' }}>
+                                    {rowByStatus(index, costs, "name")}
+                                </TableCell>
+                                <TableCell style={{ width: '200px' }}>
+                                    {rowByStatus(index, costs, "cost", "number")}
+                                </TableCell>
+                                <TableCell style={{ width: '200px' }}>
+                                    {categoryByStatus(index, costs)}
+                                </TableCell>
+                                <TableCell >
+                                    <Button style={{margin:"2px"}} variant="contained" color="error" onClick={() => deleteCost(index)}>Delete</Button>
+                                    <Button style={{margin:"2px"}} variant="contained" color="success" onClick={() => editCost(index, cost)}>{costs[index].isEdit ? 'Save' : 'Edit'}</Button>
+                                </TableCell>
+                            </TableRow>
+                        </HtmlTooltip>
+                    ))}
+                </TableBody>
+            </Table>
+        }
+    }
     const HtmlTooltip = styled(({ className, ...props }) => (
         <Tooltip {...props} classes={{ popper: className }} />
     ))(({ theme }) => ({
@@ -173,19 +298,20 @@ function Products() {
     }));
 
     return (
-        <Fragment >
+        <div >
             <div style={{ position: 'fixed', height: '100px', width: '100%' }}>
-                <h1 style={{ margin: 10, position: 'fixed' }}>
-                    Costs Manager
-                </h1>
                 <Button
-                    style={{ margin: 10, marginTop: 70, position: 'fixed' }}
+                    style={{ margin: 10, position: 'fixed' }}
                     variant="outlined"
                     onClick={() => setRerortsDialogOpen(true)}>
                     Reports
                 </Button>
+                <h1 style={{ margin: 10, marginTop: 70, position: 'fixed' }}>
+                    Costs Manager
+                </h1>
+
             </div>
-            <Card className="App" style={{ margin: 20, padding: 10, overflow: 'auto', position: 'relative', marginTop: '130px' }}>
+            <Box sx={{ boxShadow: 3 }} className="App" style={{ margin: 20, padding: 10, overflow: 'auto', position: 'relative', marginTop: '130px', width: '900px' }}>
                 <ReportsDialog
                     open={rerortsDialogOpen}
                     onClose={() => setRerortsDialogOpen(false)}
@@ -229,7 +355,7 @@ function Products() {
                                     </MenuItem>
                                 ))}
                             </TextField>
-                            <Button variant="contained" color="primary" type="submit" style={{ margin: "20px" }}>
+                            <Button variant="contained" color="success" type="submit" style={{ margin: "20px" }}>
                                 Add Cost
                             </Button>
                         </div>
@@ -240,51 +366,14 @@ function Products() {
                                 margin="normal"
                                 id="description"
                                 name="description"
-                                style={{ margin: "10px", width: 630 }}
+                                style={{ margin: "10px", width: 655 }}
                             />
                         </div>
                     </form>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Cost</TableCell>
-                                <TableCell>Category</TableCell>
-                                <TableCell>Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {costs.map((cost, index) => (
-                                <HtmlTooltip key={index}
-                                    title={
-                                        <React.Fragment>
-                                            <Typography color="inherit">Description</Typography>
-                                            {costs[index]['description']}
-                                        </React.Fragment>
-                                    }
-                                >
-                                    <TableRow key={index}>
-                                        <TableCell style={{width: '200px'}}>
-                                            {rowByStatus(index, costs, "name")}
-                                        </TableCell>
-                                        <TableCell style={{width: '200px'}}>
-                                            {rowByStatus(index, costs, "cost", "number")}
-                                        </TableCell>
-                                        <TableCell style={{width: '200px'}}>
-                                            {categoryByStatus(index, costs)}
-                                        </TableCell>
-                                        <TableCell >
-                                            <Button onClick={() => deleteCost(index)}>Delete</Button>
-                                            <Button onClick={() => editCost(index, cost)}>{costs[index].isEdit ? 'Save' : 'Edit'}</Button>
-                                        </TableCell>
-                                    </TableRow>
-                                </HtmlTooltip>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    {renderTable()}
                 </div>
-            </Card>
-        </Fragment>
+            </Box>
+        </div >
     );
 }
 

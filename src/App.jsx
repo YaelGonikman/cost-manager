@@ -1,5 +1,7 @@
 import './App.css'
 import Products from "./components/Products.jsx";
+import 'react-notifications-component/dist/theme.css'
+import { ReactNotifications } from 'react-notifications-component'
 
 function App() {
     return (
@@ -7,6 +9,7 @@ function App() {
           <div style={{marginRight: '20px', display:'flex', flexDirection:'row'}}>
               <Products/>
           </div>
+          <ReactNotifications/>
       </div>
   )
 }

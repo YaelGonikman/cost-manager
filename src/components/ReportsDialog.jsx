@@ -1,20 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import { Box, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, IconButton, Button } from '@mui/material';
+import { MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, IconButton, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 
 function ReportsDialog(props) {
   const { onClose, open, costs, categories, HtmlTooltip } = props;
   const [relevantCosts, setRelevantCosts] = useState([])
-  const [datesValue, setDatesValue] = useState([null, null]);
+  const [month, setMonth] = useState(1);
+  const [year, setYear] = useState(2023);
 
   useEffect(() => {
     setRelevantCosts(costs)
-    setDatesValue([null, null])
   }, [costs])
 
   const rowByStatus = (index, costs, prop, type) => {
@@ -36,17 +33,31 @@ function ReportsDialog(props) {
     />
   }
 
-  function filterByDateRange() {
-    const startDate = datesValue[0].$d
-    const endDate = new Date(datesValue[1].$d)
-    endDate.setUTCHours(45, 59, 59, 999)
+  const filterByDateRange = () => {
     setRelevantCosts(costs.filter(item => {
-      return item.createdAt >= startDate && item.createdAt <= endDate;
+      console.log(item.createdAt.getMonth(), new Date(item.createdAt).getFullYear())
+      return item.createdAt.getMonth() + 1 == month &&  item.createdAt.getYear() == year;
     }))
   }
 
   const getCreatedAtValue = (date) => {
-    return date.toLocaleString("en-US", {timeZone: "Israel"})
+    return date.toLocaleString("en-US", { timeZone: "Israel" })
+  }
+
+  const renderMonth = () => {
+    const months = []
+    for (let i = 1; i < 13; i++) {
+      months.push([<MenuItem key={i} value={i}>{i}</MenuItem>])
+    }
+    return months
+  }
+
+  const handleMonthChange = (month) => {
+    setMonth(month.target.value)
+  }
+
+  const handleYaerChange = (year) => {
+    setYear(year.target.value)
   }
 
   return (
@@ -64,24 +75,28 @@ function ReportsDialog(props) {
         <DialogTitle>Reports</DialogTitle>
       </div>
       <div style={{ margin: 10, display: 'flex' }}>
-        <LocalizationProvider
-          dateAdapter={AdapterDayjs}
-          localeText={{ start: 'From', end: 'To' }}
+        <Select
+          style={{ width: "100px", margin: "10px" }}
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={month}
+          label="Age"
+          onChange={handleMonthChange}
         >
-          <DateRangePicker
-            value={datesValue}
-            onChange={(newValue) => {
-              setDatesValue(newValue);
-            }}
-            renderInput={(startProps, endProps) => (
-              <React.Fragment>
-                <TextField {...startProps} />
-                <Box sx={{ mx: 2 }}> to </Box>
-                <TextField {...endProps} />
-              </React.Fragment>
-            )}
-          />
-        </LocalizationProvider>
+          {renderMonth()}
+        </Select>
+        <Select
+          style={{ width: "100px", margin: "10px" }}
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={year}
+          label="Age"
+          onChange={handleYaerChange}
+        >
+          <MenuItem value={2021}>{2021}</MenuItem>
+          <MenuItem value={2022}>{2022}</MenuItem>
+          <MenuItem value={2023}>{2023}</MenuItem>
+        </Select>
         <Button style={{ margin: 10 }} onClick={filterByDateRange}>Filter</Button>
       </div>
       <Table >
