@@ -280,6 +280,10 @@ function Products() {
                     ))}
                 </TableBody>
             </Table>
+        } else {
+            return <h2 style={{display: 'flex', justifyContent:'center'}}>
+                No Products
+            </h2>
         }
     }
 
@@ -303,7 +307,7 @@ function Products() {
                     costs={costs}
                     categories={categories}
                 />
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative', display:'flex', justifyContent:'center' }}>
                     <form onSubmit={addCost} >
                         <div>
                             <TextField
@@ -354,8 +358,9 @@ function Products() {
                             />
                         </div>
                     </form>
-                    {renderTable()}
                 </div>
+                {renderTable()}
+
             </Box>
         </div >
     );
