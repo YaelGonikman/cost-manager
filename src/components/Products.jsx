@@ -1,5 +1,18 @@
-import React, { useState, useEffect, Fragment } from 'react';
-import { Box, Button, Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip, Typography, MenuItem, Card } from '@mui/material';
+// Yael Gonikman 206752396 0522430787 yaelgonikman@gmail.com
+// Shay peretz 319126405 0508317979 shay28561@gmail.com
+
+import React, { useState, useEffect } from 'react';
+import {
+    Box,
+    Button,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    TextField,
+    MenuItem
+} from '@mui/material';
 import { fetchData, setData } from '../core/localStorage';
 import ReportsDialog from './ReportsDialog';
 import { Store } from 'react-notifications-component';
@@ -7,8 +20,11 @@ import { Store } from 'react-notifications-component';
 function Products() {
     // Initialize state for storing costs data
     const [costs, setCosts] = useState([]);
+
+    // Is reports dialog open
     const [rerortsDialogOpen, setRerortsDialogOpen] = useState(false);
 
+    // The categories for selection 
     const categories = [
         {
             value: 'groceries',
@@ -48,7 +64,6 @@ function Products() {
         },
     ];
 
-
     // Fetch costs data from local storage when the component mounts
     useEffect(() => {
         async function getItem() {
@@ -60,7 +75,7 @@ function Products() {
         getItem()
     }, []);
 
-    // Save costs data to local storage when it updates
+    // Save costs data to local storage when it the added or removed
     useEffect(() => {
         async function setItem() {
             await setData('costs', JSON.stringify(costs));
@@ -68,6 +83,7 @@ function Products() {
         setItem()
     }, [costs.length]);
 
+    // Validation notify for empty values
     const notifyEmptyValue = (valueNames) => {
         Store.addNotification({
             title: 'Error',
@@ -101,6 +117,7 @@ function Products() {
         if (isEmpty(form.elements.description.value)) {
             missingValues.push('description')
         }
+
         if (missingValues.length) {
             notifyEmptyValue(missingValues)
             return false
@@ -126,8 +143,9 @@ function Products() {
             setCosts([...costs, cost]);
             form.reset();
 
+            // Notify added
             Store.addNotification({
-                title: 'Product added succesfully!',
+                title: 'Product added successfully!',
                 type: 'success',
                 insert: 'top',
                 container: 'top-right',
@@ -145,7 +163,7 @@ function Products() {
     const deleteCost = (index) => {
         setCosts(costs.filter((_, i) => i !== index));
         Store.addNotification({
-            title: 'Product removed succesfully!',
+            title: 'Product removed successfully!',
             type: 'info',
             insert: 'top',
             container: 'top-right',
@@ -159,10 +177,11 @@ function Products() {
     };
 
     // Function for editing a cost item
-    const editCost = async(index) => {
+    const editCost = async (index) => {
+        // If edit mode the button label is 'Save' - the action will be save & notify
         if (costs[index].isEdit) {
             Store.addNotification({
-                title: 'Product edited succesfully!',
+                title: 'Product edited successfully!',
                 type: 'info',
                 insert: 'top',
                 container: 'top-right',
@@ -174,16 +193,24 @@ function Products() {
                 }
             });
 
+            // save data
             await setData('costs', JSON.stringify(costs));
         }
 
-        setCosts(costs.map((cost, i) => (i === index ? { ...cost, isEdit: !cost.isEdit } : cost)));
+        // set from read-only to edit and the opposite 
+        setCosts(costs.map((cost, i) =>
+            (i === index ? { ...cost, isEdit: !cost.isEdit } : cost)
+        ));
     };
 
+    // Set state to relevant values
     const handleChange = (index, name, event) => {
-        setCosts(costs.map((cost, i) => (i === index ? { ...cost, [name]: event.target.value } : cost)));
+        setCosts(costs.map((cost, i) =>
+            (i === index ? { ...cost, [name]: event.target.value } : cost)
+        ));
     }
 
+    // Given index, costs, prop, type return the raw by status (edit/save)
     const rowByStatus = (index, costs, prop, type) => {
         if (costs[index].isEdit) {
             const label = `Edit ${prop}`
@@ -208,6 +235,7 @@ function Products() {
         }
     }
 
+    // Given index, costs return the category raw by status (edit/save)
     const categoryByStatus = (index, costs) => {
         if (costs[index].isEdit) {
             return <TextField
@@ -222,7 +250,9 @@ function Products() {
                 onChange={(e) => handleChange(index, 'category', e)}
             >
                 {categories.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
+                    <MenuItem
+                        key={option.value}
+                        value={option.value}>
                         {option.label}
                     </MenuItem>
                 ))}
@@ -245,6 +275,7 @@ function Products() {
         }
     }
 
+    // Render table
     const renderTable = () => {
         if (costs.length) {
             return <Table>
@@ -259,29 +290,37 @@ function Products() {
                 </TableHead>
                 <TableBody>
                     {costs.map((cost, index) => (
-                            <TableRow key={index}>
-                                <TableCell style={{ width: '200px' }}>
-                                    {rowByStatus(index, costs, 'name')}
-                                </TableCell>
-                                <TableCell style={{ width: '200px' }}>
-                                    {rowByStatus(index, costs, 'cost', 'number')}
-                                </TableCell>
-                                <TableCell style={{ width: '120px' }}>
-                                    {categoryByStatus(index, costs)}
-                                </TableCell>
-                                <TableCell style={{ width: '200px' }}>
-                                    {rowByStatus(index, costs, 'description', 'text')}
-                                </TableCell>
-                                <TableCell >
-                                    <Button style={{margin:'2px'}} variant='contained' color='error' onClick={() => deleteCost(index)}>Delete</Button>
-                                    <Button style={{margin:'2px'}} variant='contained' color='success' onClick={() => editCost(index, cost)}>{costs[index].isEdit ? 'Save' : 'Edit'}</Button>
-                                </TableCell>
-                            </TableRow>
+                        <TableRow key={index}>
+                            <TableCell style={{ width: '200px' }}>
+                                {rowByStatus(index, costs, 'name')}
+                            </TableCell>
+                            <TableCell style={{ width: '200px' }}>
+                                {rowByStatus(index, costs, 'cost', 'number')}
+                            </TableCell>
+                            <TableCell style={{ width: '120px' }}>
+                                {categoryByStatus(index, costs)}
+                            </TableCell>
+                            <TableCell style={{ width: '200px' }}>
+                                {rowByStatus(index, costs, 'description', 'text')}
+                            </TableCell>
+                            <TableCell >
+                                <Button style={{ margin: '2px' }}
+                                    variant='contained'
+                                    color='error'
+                                    onClick={() => deleteCost(index)}>Delete
+                                </Button>
+                                <Button style={{ margin: '2px' }}
+                                    variant='contained' color='success'
+                                    onClick={() => editCost(index, cost)}>
+                                    {costs[index].isEdit ? 'Save' : 'Edit'}
+                                </Button>
+                            </TableCell>
+                        </TableRow>
                     ))}
                 </TableBody>
             </Table>
         } else {
-            return <h2 style={{display: 'flex', justifyContent:'center'}}>
+            return <h2 style={{ display: 'flex', justifyContent: 'center' }}>
                 No Products
             </h2>
         }
@@ -300,14 +339,26 @@ function Products() {
                     Costs Manager
                 </h1>
             </div>
-            <Box sx={{ boxShadow: 3 }} className='App' style={{ margin: 20, padding: 10, overflow: 'auto', position: 'relative', marginTop: '130px', width: '1100px' }}>
+            <Box sx={{ boxShadow: 3 }} className='App'
+                style={{
+                    margin: 20,
+                    padding: 10,
+                    overflow: 'auto',
+                    position: 'relative',
+                    marginTop: '130px',
+                    width: '1100px'
+                }}>
                 <ReportsDialog
                     open={rerortsDialogOpen}
                     onClose={() => setRerortsDialogOpen(false)}
                     costs={costs}
                     categories={categories}
                 />
-                <div style={{ position: 'relative', display:'flex', justifyContent:'center' }}>
+                <div style={{
+                    position: 'relative',
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}>
                     <form onSubmit={addCost} >
                         <div>
                             <TextField
@@ -338,12 +389,18 @@ function Products() {
                                 defaultValue='other'
                             >
                                 {categories.map((option) => (
-                                    <MenuItem key={option.value} value={option.value}>
+                                    <MenuItem
+                                        key={option.value}
+                                        value={option.value}>
                                         {option.label}
                                     </MenuItem>
                                 ))}
                             </TextField>
-                            <Button variant='contained' color='success' type='submit' style={{ margin: '20px' }}>
+                            <Button
+                                variant='contained'
+                                color='success'
+                                type='submit'
+                                style={{ margin: '20px' }}>
                                 Add Cost
                             </Button>
                         </div>
@@ -360,7 +417,6 @@ function Products() {
                     </form>
                 </div>
                 {renderTable()}
-
             </Box>
         </div >
     );

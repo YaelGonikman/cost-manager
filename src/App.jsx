@@ -1,3 +1,6 @@
+// Yael Gonikman 206752396 0522430787 yaelgonikman@gmail.com
+// Shay peretz 319126405 0508317979 shay28561@gmail.com
+
 import './App.css'
 import Products from "./components/Products.jsx";
 import 'react-notifications-component/dist/theme.css'

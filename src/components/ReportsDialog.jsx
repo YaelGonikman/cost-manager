@@ -1,16 +1,19 @@
+// Yael Gonikman 206752396 0522430787 yaelgonikman@gmail.com
+// Shay peretz 319126405 0508317979 shay28561@gmail.com
+
 import React, { useState, useEffect } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import {Tooltip,  MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, IconButton, Button } from '@mui/material';
+import { Tooltip, MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography, IconButton, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
 import { tooltipClasses } from '@mui/material/Tooltip';
 
 function ReportsDialog(props) {
-  const { onClose, open, costs, categories } = props;
-  const [relevantCosts, setRelevantCosts] = useState([])
-  const [month, setMonth] = useState(1);
-  const [year, setYear] = useState(2023);
+  const { onClose, open, costs, categories } = props; // Destructur props
+  const [relevantCosts, setRelevantCosts] = useState([]) // Relevant costs according to filter
+  const [month, setMonth] = useState(1); // Month
+  const [year, setYear] = useState(2023); // Year
 
   useEffect(() => {
     setRelevantCosts(costs)
@@ -28,7 +31,8 @@ function ReportsDialog(props) {
     },
   }));
 
-  const rowByStatus = (index, costs, prop, type) => {
+  // Render row
+  const renderRaw = (index, costs, prop, type) => {
     return <TextField
       id='outlined-read-only-input'
       value={costs[index][prop]}
@@ -37,7 +41,8 @@ function ReportsDialog(props) {
   }
 
 
-  const categoryByStatus = (index, costs) => {
+  // Render Category row
+  const renderCategoryRaw = (index, costs) => {
     return <TextField
       id='outlined-read-only-input'
       value={categories.filter((cat) => cat.value === costs[index]['category'])[0].label}
@@ -47,9 +52,10 @@ function ReportsDialog(props) {
     />
   }
 
-  const filterByDateRange = () => {
+  // Filer by month and year
+  const filterByMonthAndYear = () => {
     setRelevantCosts(costs.filter(item => {
-      return item.createdAt.getMonth() + 1  === month && item.createdAt.getFullYear() === year;
+      return item.createdAt.getMonth() + 1 === month && item.createdAt.getFullYear() === year;
     }))
   }
 
@@ -57,6 +63,7 @@ function ReportsDialog(props) {
     return date.toLocaleString("en-US", { timeZone: "Israel" })
   }
 
+  // Render list of months
   const renderMonth = () => {
     const months = []
     for (let i = 1; i < 13; i++) {
@@ -110,7 +117,7 @@ function ReportsDialog(props) {
           <MenuItem value={2022}>{2022}</MenuItem>
           <MenuItem value={2023}>{2023}</MenuItem>
         </Select>
-        <Button style={{ margin: 10 }} onClick={filterByDateRange}>Filter</Button>
+        <Button style={{ margin: 10 }} onClick={filterByMonthAndYear}>Filter</Button>
       </div>
       <Table >
         <TableHead>
@@ -122,12 +129,13 @@ function ReportsDialog(props) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {console.log(costs, relevantCosts)}
           {relevantCosts.map((cost, index) => (
             <HtmlTooltip key={index}
               title={
                 <React.Fragment>
-                  <Typography color='inherit'>Description</Typography>
+                  <Typography color='inherit'>
+                    Description
+                  </Typography>
                   {relevantCosts[index]['description']}
                 </React.Fragment>
               }
@@ -140,13 +148,13 @@ function ReportsDialog(props) {
                   />
                 </TableCell>
                 <TableCell>
-                  {rowByStatus(index, relevantCosts, 'name')}
+                  {renderRaw(index, relevantCosts, 'name')}
                 </TableCell>
                 <TableCell >
-                  {rowByStatus(index, relevantCosts, 'cost', 'number')}
+                  {renderRaw(index, relevantCosts, 'cost', 'number')}
                 </TableCell>
                 <TableCell >
-                  {categoryByStatus(index, relevantCosts)}
+                  {renderCategoryRaw(index, relevantCosts)}
                 </TableCell>
               </TableRow>
             </HtmlTooltip>
