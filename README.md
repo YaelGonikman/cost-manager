@@ -1,2 +1,2 @@
 # cost-manager
-fron project hit
+front project hit
